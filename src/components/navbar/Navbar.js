@@ -1,11 +1,41 @@
 import useStyles from './styles';
 import { Container, Button } from '@material-ui/core';
-import { AccountCircle } from '@material-ui/icons';
-
+import { AccountCircle, ImageOutlined } from '@material-ui/icons';
+import { useState, useEffect } from 'react';
+import decode from 'jwt-decode';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 
 export const Navbar = () => {
     const classes = useStyles();
-    const user = false;
+    const [ user, setUser ] = useState(JSON.parse(localStorage.getItem('profile')));
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const location = useLocation();
+
+
+
+
+    const login = () => {
+        navigate('/auth');
+    }
+    const logout = () => {
+        dispatch({ type : 'LOGOUT' })
+        navigate('/auth');
+        setUser(null);
+    }
+
+
+    useEffect(() => {
+        const token = user?.token;
+
+        if(token) {
+            const decodedToken = decode(token);
+            if(decodedToken.exp * 1000 < new Date().getTime()) logout();
+        }
+
+        setUser(JSON.parse(localStorage.getItem('profile')));
+    }, [location])
 
 
     return(
@@ -27,7 +57,7 @@ export const Navbar = () => {
             </div>
             ) : (
                 <div className={classes.myAccountDiv}>
-                    <Button>
+                    <Button onClick={() => login()}>
                         Login
                     </Button>
                 </div>
